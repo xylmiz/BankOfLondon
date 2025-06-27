@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .profile-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .info-value {
+            color: #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .balance {
+            font-size: 2rem !important;
+            color: #2ecc71 !important;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .statement-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .statement-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .statement-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: background 0.3s ease;
+        }
+
+        .statement-item:hover {
+            background: #e9ecef;
+        }
+
+        .transaction-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .transaction-desc {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .transaction-date {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .transaction-amount {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        .credit {
+            color: #2ecc71;
+        }
+
+        .debit {
+            color: #e74c3c;
+        }
+
+        .transfer-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .transfer-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .transfer-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .transfer-button:active {
+            transform: translateY(0);
+        }
+
+        .transfer-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .countdown {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .popup-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translate(-50%, -60%); opacity: 0; }
+            to { transform: translate(-50%, -50%); opacity: 1; }
+        }
+
+        .popup h2 {
+            color: #2ecc71;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .popup p {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #764ba2;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 Banking Dashboard</h1>
+            <p>Welcome to your secure banking portal</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="card profile-card">
+                <h2>👤 Account Profile</h2>
+                <div class="profile-info">
+                    <div class="info-item">
+                        <span class="info-label">Account Holder:</span>
+                        <span class="info-value">John Doe</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Account Number:</span>
+                        <span class="info-value">XXXX-XXXX-XXXX-3456</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Account Type:</span>
+                        <span class="info-value">Savings Account</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Current Balance:</span>
+                        <span class="info-value balance" id="currentBalance">$1,450,670.75</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card statement-card">
+                <h2>📋 Mini Statement</h2>
+                <div class="statement-list">
+                    <div class="statement-item">
+                        <div class="transaction-info">
+                            <div class="transaction-desc">Money Recive</div>
+                            <div class="transaction-date">2025-06-25</div>
+                        </div>
+                        <div class="transaction-amount credit">+$300,000.00</div>
+                    </div>
+                    <div class="statement-item">
+                        <div class="transaction-info">
+                            <div class="transaction-desc">Electric Bill</div>
+                            <div class="transaction-date">2025-06-24</div>
+                        </div>
+                        <div class="transaction-amount debit">-$385.50</div>
+                    </div>
+                    <div class="statement-item">
+                        <div class="transaction-info">
+                            <div class="transaction-desc">Money Recive</div>
+                            <div class="transaction-date">2025-06-23</div>
+                        </div>
+                        <div class="transaction-amount credit">+$200,561.25</div>
+                    </div>
+                    <div class="statement-item">
+                        <div class="transaction-info">
+                            <div class="transaction-desc">Crypto Buying</div>
+                            <div class="transaction-date">2025-06-22</div>
+                        </div>
+                        <div class="transaction-amount debit">-$100,000.00</div>
+                    </div>
+                    <div class="statement-item">
+                        <div class="transaction-info">
+                            <div class="transaction-desc">Money Recive</div>
+                            <div class="transaction-date">2025-06-21</div>
+                        </div>
+                        <div class="transaction-amount credit">+$1,050,495.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="transfer-section">
+            <h2>💸 Transfer Money</h2>
+            <p>Transfer your entire balance to another account</p>
+            <div id="countdownDisplay" class="countdown hidden">$0.00</div>
+            <button id="transferBtn" class="transfer-button">
+                Transfer Money to Your Account
+            </button>
+        </div>
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <h2>✅ Success!</h2>
+            <p>Money transfer completed successfully!</p>
+            <p>Your balance has been transferred.</p>
+            <button class="close-btn" onclick="closePopup()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let currentBalance = 1450670.75;
+        let isTransferring = false;
+
+        const balanceElement = document.getElementById('currentBalance');
+        const transferBtn = document.getElementById('transferBtn');
+        const countdownDisplay = document.getElementById('countdownDisplay');
+        const popup = document.getElementById('popup');
+
+        function updateBalance(amount) {
+            balanceElement.textContent = `$${amount.toFixed(2)}`;
+        }
+
+        function transferMoney() {
+            if (isTransferring) return;
+            
+            isTransferring = true;
+            transferBtn.disabled = true;
+            transferBtn.textContent = 'Transferring...';
+            
+            // Show countdown display
+            countdownDisplay.classList.remove('hidden');
+            
+            // Calculate step amount for smooth countdown
+            const stepAmount = currentBalance / 50; // 50 steps over 5 seconds
+            let remainingBalance = currentBalance;
+            
+            const interval = setInterval(() => {
+                remainingBalance -= stepAmount;
+                
+                if (remainingBalance <= 0) {
+                    remainingBalance = 0;
+                    clearInterval(interval);
+                    
+                    // Update displays
+                    countdownDisplay.textContent = '$0.00';
+                    updateBalance(0);
+                    currentBalance = 0;
+                    
+                    // Show success popup after a brief delay
+                    setTimeout(() => {
+                        showPopup();
+                        resetTransferButton();
+                    }, 500);
+                } else {
+                    countdownDisplay.textContent = `$${remainingBalance.toFixed(2)}`;
+                    updateBalance(remainingBalance);
+                    currentBalance = remainingBalance;
+                }
+            }, 100); // Update every 100ms for smooth animation
+        }
+
+        function showPopup() {
+            popup.style.display = 'block';
+        }
+
+        function closePopup() {
+            popup.style.display = 'none';
+        }
+
+        function resetTransferButton() {
+            isTransferring = false;
+            transferBtn.disabled = false;
+            transferBtn.textContent = 'Transfer Money to Your Account';
+            countdownDisplay.classList.add('hidden');
+        }
+
+        // Event listeners
+        transferBtn.addEventListener('click', transferMoney);
+
+        // Close popup when clicking outside
+        popup.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                closePopup();
+            }
+        });
+
+        // Close popup with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePopup();
+            }
+        });
+    </script>
+</body>
+</html>
